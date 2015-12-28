@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 
 class Client:
@@ -31,8 +32,15 @@ class Client:
     def query(self, query):
         return self._parse_response(self.raw_query(query))
 
+    def _parse_value(self, item):
+        if 'datatype' not in item:
+            return item['value']
+        elif item['datatype'] == 'http://www.w3.org/2001/XMLSchema#dateTime':
+            # This is ok, since we assume WDQS returns only UTC timestamps
+            return datetime.strptime(item['value'], '%Y-%m-%dT%H:%M:%SZ')
+
     def _parse_response(self, response):
         parsed = []
         for item in response['results']['bindings']:
-            parsed.append({k: v['value'] for k, v in item.items()})
+            parsed.append({k: self._parse_value(v) for k, v in item.items()})
         return parsed
