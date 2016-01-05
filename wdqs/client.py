@@ -33,11 +33,13 @@ class Client:
         return self._parse_response(self.raw_query(query))
 
     def _parse_value(self, item):
-        if 'datatype' not in item:
-            return item['value']
-        elif item['datatype'] == 'http://www.w3.org/2001/XMLSchema#dateTime':
-            # This is ok, since we assume WDQS returns only UTC timestamps
-            return datetime.strptime(item['value'], '%Y-%m-%dT%H:%M:%SZ')
+        if 'datatype' in item:
+            if item['datatype'] == 'http://www.w3.org/2001/XMLSchema#integer':
+                return int(item['value'])
+            elif item['datatype'] == 'http://www.w3.org/2001/XMLSchema#dateTime':
+                # This is ok, since we assume WDQS returns only UTC timestamps
+                return datetime.strptime(item['value'], '%Y-%m-%dT%H:%M:%SZ')
+        return item['value']
 
     def _parse_response(self, response):
         parsed = []
